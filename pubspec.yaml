@@ -1,0 +1,36 @@
+name: calorimate_mobile
+description: CaloriMate mobile client app
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  dio: ^5.7.0
+  provider: ^6.1.2
+  shared_preferences: ^2.3.4
+  google_fonts: ^6.2.1
+  fl_chart: ^0.70.2
+  intl: ^0.20.2
+  flutter_map: ^5.0.0
+  latlong2: ^0.9.1
+  geolocator: ^9.0.2
+  url_launcher: ^6.1.11
+  image_picker: ^0.8.7+5
+  file_picker: ^10.1.9
+  path: ^1.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/images/categories/
