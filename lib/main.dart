@@ -5,6 +5,7 @@ import 'config/theme.dart';
 import 'providers/auth_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/main_shell.dart';
+import 'screens/trainer/trainer_shell.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,6 +51,10 @@ class _Root extends StatelessWidget {
       );
     }
 
-    return auth.isLoggedIn ? const MainShell() : const LoginScreen();
+    if (!auth.isLoggedIn) return const LoginScreen();
+
+    // Route by role
+    if (auth.isTrainer) return const TrainerShell();
+    return const MainShell();
   }
 }

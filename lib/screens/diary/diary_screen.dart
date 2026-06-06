@@ -18,6 +18,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
   final _api = ApiClient.instance;
   bool _loading = true;
   Map<String, dynamic>? _data;
+  List<Map<String, dynamic>> _recommendations = [];
 
   static const _categories = {
     'breakfast': ('Sarapan', 'assets/images/categories/icon-breakfast.png'),
@@ -42,9 +43,25 @@ class _DiaryScreenState extends State<DiaryScreen> {
           _loading = false;
         });
       }
+      _loadRecommendations();
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  Future<void> _loadRecommendations() async {
+    try {
+      final res = await _api.get('/client/recommendations/food');
+      final data = res.data as Map<String, dynamic>;
+      final recs = data['recommendations'] as List? ?? [];
+      if (mounted) {
+        setState(() {
+          _recommendations = recs
+              .map((e) => e as Map<String, dynamic>)
+              .toList();
+        });
+      }
+    } catch (_) {}
   }
 
   /// Normalises API response — consumptions may be `{}`, `[]`, or grouped map.
@@ -97,6 +114,39 @@ class _DiaryScreenState extends State<DiaryScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal menghapus: $e')),
+        );
+      }
+    }
+  }
+
+  String _defaultCategory() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 10) return 'breakfast';
+    if (hour >= 10 && hour < 15) return 'lunch';
+    if (hour >= 15 && hour < 18) return 'snack';
+    return 'dinner';
+  }
+
+  Future<void> _quickAddRecommendation(Map<String, dynamic> food) async {
+    try {
+      await _api.post('/client/diary', data: {
+        'food_id': food['food_id'],
+        'portions': 1,
+        'category': _defaultCategory(),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Makanan ditambahkan!'),
+            backgroundColor: CmColors.primaryGreen,
+          ),
+        );
+      }
+      _load();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal: $e')),
         );
       }
     }
@@ -241,6 +291,105 @@ class _DiaryScreenState extends State<DiaryScreen> {
                 ],
               ),
             ),
+            // ── Rekomendasi Makanan ──────────────────────────────
+            if (_recommendations.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  const Icon(Icons.auto_awesome, color: CmColors.accentOrange, size: 20),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Rekomendasi Makananmu',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: CmColors.primaryGreen,
+                        ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 140,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _recommendations.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+                  itemBuilder: (_, i) {
+                    final rec = _recommendations[i];
+                    final food = rec['food'] as Map<String, dynamic>? ?? {};
+                    final tag = rec['tag']?.toString() ?? '';
+                    final cal = _toDouble(food['calories_per_portion']) ?? 0;
+                    return Container(
+                      width: 150,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: CmColors.accentOrange.withValues(alpha: 0.3)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: CmColors.accentOrange.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              tag,
+                              style: const TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: CmColors.accentOrange,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            food['name']?.toString() ?? '',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                              color: CmColors.primaryGreen,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const Spacer(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '${cal.round()} kkal',
+                                style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                              ),
+                              InkWell(
+                                onTap: () => _quickAddRecommendation(food),
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: CmColors.primaryGreen,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Icon(Icons.add, color: Colors.white, size: 16),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             ..._categories.entries.map((e) {
               final items = consumptions[e.key] as List? ?? [];

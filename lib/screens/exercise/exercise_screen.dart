@@ -17,6 +17,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
   final _api = ApiClient.instance;
   bool _loading = true;
   List<Map<String, dynamic>> _programs = [];
+  List<Map<String, dynamic>> _recommendations = [];
 
   @override
   void initState() {
@@ -33,9 +34,25 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
         _programs = list.map((e) => e as Map<String, dynamic>).toList();
         _loading = false;
       });
+      _loadRecommendations();
     } catch (_) {
       setState(() => _loading = false);
     }
+  }
+
+  Future<void> _loadRecommendations() async {
+    try {
+      final res = await _api.get('/client/recommendations/exercise');
+      final data = res.data as Map<String, dynamic>;
+      final recs = data['recommendations'] as List? ?? [];
+      if (mounted) {
+        setState(() {
+          _recommendations = recs
+              .map((e) => e as Map<String, dynamic>)
+              .toList();
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -119,6 +136,113 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                       ),
                     ),
                   ),
+                  // ── Rekomendasi Latihan ──────────────────────────────
+                  if (_recommendations.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        const Icon(Icons.auto_awesome, color: CmColors.accentOrange, size: 20),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Rekomendasi Latihan Untukmu',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: CmColors.primaryGreen,
+                              ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ..._recommendations.map((rec) {
+                      final program = rec['program'] as Map<String, dynamic>? ?? {};
+                      final tag = rec['tag']?.toString() ?? '';
+                      final title = program['title']?.toString() ?? '';
+                      final difficulty = program['difficulty']?.toString() ?? '';
+                      final estCal = program['estimated_calories'] ?? 0;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                CmColors.accentOrange.withValues(alpha: 0.12),
+                                Colors.white,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: CmColors.accentOrange.withValues(alpha: 0.3)),
+                          ),
+                          child: InkWell(
+                            onTap: () async {
+                              final id = program['id'] as int?;
+                              if (id == null) return;
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ExerciseDetailScreen(
+                                    programId: id,
+                                    title: title,
+                                  ),
+                                ),
+                              );
+                              _load();
+                            },
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: CmColors.accentOrange.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(Icons.local_fire_department,
+                                      color: CmColors.accentOrange, size: 24),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        title,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: CmColors.primaryGreen,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      Text(
+                                        '$difficulty · ~$estCal kkal',
+                                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: CmColors.accentOrange.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    tag,
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: CmColors.accentOrange,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
                   if (_programs.isEmpty)
                     Center(
                       child: Padding(

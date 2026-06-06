@@ -45,6 +45,22 @@ class AuthService {
     return data;
   }
 
+  Future<Map<String, dynamic>> registerTrainer({
+    required String username,
+    required String email,
+    required String password,
+  }) async {
+    final res = await _api.post('/register/trainer', data: {
+      'username': username,
+      'email': email,
+      'password': password,
+    });
+    final data = res.data as Map<String, dynamic>;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('access_token', data['access_token'] as String);
+    return data;
+  }
+
   Future<void> logout() async {
     try {
       await _api.post('/logout');

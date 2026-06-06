@@ -21,6 +21,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _bb = TextEditingController();
   final _umur = TextEditingController();
   String _gender = 'L';
+  int _selectedRole = 1; // 1 = Client, 2 = Trainer
 
   @override
   void dispose() {
@@ -36,15 +37,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     final auth = context.read<AuthProvider>();
-    final ok = await auth.register(
-      username: _username.text.trim(),
-      email: _email.text.trim(),
-      password: _password.text,
-      tb: double.parse(_tb.text),
-      bb: double.parse(_bb.text),
-      gender: _gender,
-      umur: int.parse(_umur.text),
-    );
+
+    bool ok;
+    if (_selectedRole == 2) {
+      ok = await auth.registerAsTrainer(
+        username: _username.text.trim(),
+        email: _email.text.trim(),
+        password: _password.text,
+      );
+    } else {
+      ok = await auth.register(
+        username: _username.text.trim(),
+        email: _email.text.trim(),
+        password: _password.text,
+        tb: double.parse(_tb.text),
+        bb: double.parse(_bb.text),
+        gender: _gender,
+        umur: int.parse(_umur.text),
+      );
+    }
+
     if (!ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -63,7 +75,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register Client'),
+        title: const Text('Register'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -87,43 +99,61 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       style: Theme.of(context).textTheme.headlineSmall,
                       textAlign: TextAlign.center,
                     ),
+                    const SizedBox(height: 16),
+                    // ── Role Toggle ──────────────────────
+                    Container(
+                      decoration: BoxDecoration(
+                        color: CmColors.backgroundCream,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.all(4),
+                      child: Row(
+                        children: [
+                          _roleTab('Client', 1),
+                          _roleTab('Trainer', 2),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 20),
                     _field(_username, 'Username', maxLen: 20),
                     const SizedBox(height: 12),
                     _field(_email, 'Email', keyboard: TextInputType.emailAddress),
                     const SizedBox(height: 12),
                     _field(_password, 'Password', obscure: true),
-                    const SizedBox(height: 12),
-                    _field(_tb, 'Tinggi Badan (cm)', keyboard: TextInputType.number),
-                    const SizedBox(height: 12),
-                    _field(_bb, 'Berat Badan (kg)', keyboard: TextInputType.number),
-                    const SizedBox(height: 12),
-                    _field(_umur, 'Umur', keyboard: TextInputType.number),
-                    const SizedBox(height: 12),
-                    const Text('Jenis Kelamin',
-                        style: TextStyle(fontWeight: FontWeight.w600, color: CmColors.primaryGreen)),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: RadioListTile<String>(
-                            title: const Text('Laki-laki'),
-                            value: 'L',
-                            groupValue: _gender,
-                            onChanged: (v) => setState(() => _gender = v!),
-                            contentPadding: EdgeInsets.zero,
+                    // Client-only fields
+                    if (_selectedRole == 1) ...[
+                      const SizedBox(height: 12),
+                      _field(_tb, 'Tinggi Badan (cm)', keyboard: TextInputType.number),
+                      const SizedBox(height: 12),
+                      _field(_bb, 'Berat Badan (kg)', keyboard: TextInputType.number),
+                      const SizedBox(height: 12),
+                      _field(_umur, 'Umur', keyboard: TextInputType.number),
+                      const SizedBox(height: 12),
+                      const Text('Jenis Kelamin',
+                          style: TextStyle(fontWeight: FontWeight.w600, color: CmColors.primaryGreen)),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: RadioListTile<String>(
+                              title: const Text('Laki-laki'),
+                              value: 'L',
+                              groupValue: _gender,
+                              onChanged: (v) => setState(() => _gender = v!),
+                              contentPadding: EdgeInsets.zero,
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: RadioListTile<String>(
-                            title: const Text('Perempuan'),
-                            value: 'P',
-                            groupValue: _gender,
-                            onChanged: (v) => setState(() => _gender = v!),
-                            contentPadding: EdgeInsets.zero,
+                          Expanded(
+                            child: RadioListTile<String>(
+                              title: const Text('Perempuan'),
+                              value: 'P',
+                              groupValue: _gender,
+                              onChanged: (v) => setState(() => _gender = v!),
+                              contentPadding: EdgeInsets.zero,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: auth.loading ? null : _submit,
@@ -136,11 +166,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text('Daftar'),
+                          : Text('Daftar sebagai ${_selectedRole == 1 ? 'Client' : 'Trainer'}'),
                     ),
                   ],
                 ),
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _roleTab(String label, int role) {
+    final selected = _selectedRole == role;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedRole = role),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? CmColors.primaryGreen : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: selected ? Colors.white : CmColors.primaryGreen,
+              fontSize: 14,
             ),
           ),
         ),

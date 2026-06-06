@@ -16,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _username = TextEditingController();
   final _password = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  int _selectedRole = 1; // 1 = Client, 2 = Trainer
 
   @override
   void dispose() {
@@ -27,7 +28,11 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     final auth = context.read<AuthProvider>();
-    final ok = await auth.login(_username.text.trim(), _password.text);
+    final ok = await auth.login(
+      _username.text.trim(),
+      _password.text,
+      role: _selectedRole,
+    );
     if (!ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -104,11 +109,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                     height: 56,
                                   ),
                                   const SizedBox(height: 16),
-                                  Text(
-                                    'Login Client',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineSmall,
+                                  // ── Role Toggle ──────────────────────
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: CmColors.backgroundCream,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.all(4),
+                                    child: Row(
+                                      children: [
+                                        _roleTab('Client', 1),
+                                        _roleTab('Trainer', 2),
+                                      ],
+                                    ),
                                   ),
                                   const SizedBox(height: 20),
                                   TextFormField(
@@ -145,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 color: Colors.white,
                                               ),
                                             )
-                                          : const Text('Login'),
+                                          : Text('Login sebagai ${_selectedRole == 1 ? 'Client' : 'Trainer'}'),
                                     ),
                                   ),
                                   const SizedBox(height: 16),
@@ -174,6 +187,32 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ],
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _roleTab(String label, int role) {
+    final selected = _selectedRole == role;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedRole = role),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? CmColors.primaryGreen : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: selected ? Colors.white : CmColors.primaryGreen,
+              fontSize: 14,
             ),
           ),
         ),
