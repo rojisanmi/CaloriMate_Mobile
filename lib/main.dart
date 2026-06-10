@@ -3,12 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'config/theme.dart';
 import 'providers/auth_provider.dart';
+import 'providers/notification_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/main_shell.dart';
 import 'screens/trainer/trainer_shell.dart';
+import 'services/notification_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.instance.init();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -23,8 +26,11 @@ class CaloriMateApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AuthProvider()..init(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()..init()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
+      ],
       child: MaterialApp(
         title: 'CaloriMate',
         debugShowCheckedModeBanner: false,

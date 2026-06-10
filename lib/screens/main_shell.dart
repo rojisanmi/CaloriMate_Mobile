@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
 import '../providers/auth_provider.dart';
+import '../providers/notification_provider.dart';
 import 'notifications/notifications_screen.dart';
 import 'home/home_screen.dart';
 import 'diary/diary_screen.dart';
@@ -21,6 +22,22 @@ class _MainShellState extends State<MainShell> {
   int _index = 0;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<NotificationProvider>().startPolling();
+    });
+  }
+
+  @override
+  void dispose() {
+    // Use read (not watch) since we're outside build
+    // ignore: avoid-using-read-in-build
+    context.read<NotificationProvider>().stopPolling();
+    super.dispose();
+  }
+
   static const _titles = ['Home', 'Diary', 'Exercise', 'Statistik', 'Riwayat'];
 
   final _screens = const [
@@ -34,6 +51,7 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final notifProvider = context.watch<NotificationProvider>();
 
     return Scaffold(
       key: _scaffoldKey,
@@ -58,9 +76,16 @@ class _MainShellState extends State<MainShell> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none),
-            onPressed: () {
-              Navigator.push(
+            icon: Badge(
+              isLabelVisible: notifProvider.unreadCount > 0,
+              label: Text(
+                notifProvider.unreadCount.toString(),
+                style: const TextStyle(fontSize: 10),
+              ),
+              child: const Icon(Icons.notifications_none),
+            ),
+            onPressed: () async {
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const NotificationsScreen()),
               );
@@ -247,7 +272,14 @@ class _MainShellState extends State<MainShell> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: ListTile(
-                      leading: const Icon(Icons.notifications_none, color: Colors.white70),
+                      leading: Badge(
+                        isLabelVisible: context.watch<NotificationProvider>().unreadCount > 0,
+                        label: Text(
+                          context.watch<NotificationProvider>().unreadCount.toString(),
+                          style: const TextStyle(fontSize: 10),
+                        ),
+                        child: const Icon(Icons.notifications_none, color: Colors.white70),
+                      ),
                       title: const Text('Notifikasi', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
