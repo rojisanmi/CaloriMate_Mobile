@@ -10,6 +10,7 @@ import 'package:path/path.dart' as p;
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/api_client.dart';
+import '../../services/notification_service.dart';
 import '../../config/api_config.dart';
 import '../../widgets/cm_background.dart';
 import '../../widgets/cm_card.dart';
@@ -122,6 +123,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (!mounted) return;
       await context.read<AuthProvider>().fetchProfile();
+
+      // Schedule local notifications based on saved reminder times
+      await NotificationService.instance.scheduleFoodReminder(_foodReminderTime);
+      await NotificationService.instance.scheduleExerciseReminder(_exerciseReminderTime);
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

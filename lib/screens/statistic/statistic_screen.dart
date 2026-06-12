@@ -16,6 +16,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
   final _api = ApiClient.instance;
   bool _loading = true;
   Map<String, dynamic>? _data;
+  Map<String, dynamic>? _weeklyData;
 
   @override
   void initState() {
@@ -27,8 +28,10 @@ class _StatisticScreenState extends State<StatisticScreen> {
     setState(() => _loading = true);
     try {
       final res = await _api.get('/client/statistic');
+      final resWeekly = await _api.get('/client/recommendations/weekly');
       setState(() {
         _data = res.data as Map<String, dynamic>;
+        _weeklyData = resWeekly.data as Map<String, dynamic>;
         _loading = false;
       });
     } catch (_) {
@@ -234,6 +237,46 @@ class _StatisticScreenState extends State<StatisticScreen> {
                   ),
                 );
               }),
+              
+            if (_weeklyData != null && (_weeklyData!['tips'] as List?)?.isNotEmpty == true) ...[
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  const Icon(Icons.lightbulb_outline, color: CmColors.accentOrange, size: 22),
+                  const SizedBox(width: 8),
+                  Text('Saran Perbaikan Mingguan', style: Theme.of(context).textTheme.titleMedium),
+                ],
+              ),
+              const SizedBox(height: 12),
+              CmCard(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: ((_weeklyData!['tips'] as List?) ?? []).map((tip) {
+                    final t = tip as Map<String, dynamic>;
+                    final type = t['type']?.toString() ?? 'info';
+                    final text = t['text']?.toString() ?? '';
+                    
+                    Color bColor = Colors.grey;
+                    if (type == 'success') bColor = Colors.green;
+                    else if (type == 'danger') bColor = Colors.red;
+                    else if (type == 'warning') bColor = Colors.orange;
+                    
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        border: Border(left: BorderSide(color: bColor, width: 4)),
+                      ),
+                      padding: const EdgeInsets.only(left: 12, top: 2, bottom: 2),
+                      child: Text(
+                        text,
+                        style: TextStyle(color: Colors.grey.shade700, fontSize: 13, height: 1.4),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -262,11 +305,10 @@ class _NutritionPieChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final kalori = _v(nutrition['kalori']);
     final protein = _v(nutrition['protein']);
     final lemak = _v(nutrition['lemak']);
     final karbo = _v(nutrition['karbo']);
-    final total = kalori + protein + lemak + karbo;
+    final total = protein + lemak + karbo;
 
     if (total <= 0) {
       return const Center(child: Text('Belum ada data nutrisi'));
@@ -277,7 +319,6 @@ class _NutritionPieChart extends StatelessWidget {
         sectionsSpace: 2,
         centerSpaceRadius: 40,
         sections: [
-          _section(kalori, CmColors.accentOrange, 'Kalori'),
           _section(protein, CmColors.protein, 'Protein'),
           _section(lemak, CmColors.fat, 'Lemak'),
           _section(karbo, CmColors.carbs, 'Karbo'),

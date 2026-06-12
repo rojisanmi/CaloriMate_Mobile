@@ -26,16 +26,8 @@ class _MainShellState extends State<MainShell> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<NotificationProvider>().startPolling();
+      context.read<NotificationProvider>().syncSchedules();
     });
-  }
-
-  @override
-  void dispose() {
-    // Use read (not watch) since we're outside build
-    // ignore: avoid-using-read-in-build
-    context.read<NotificationProvider>().stopPolling();
-    super.dispose();
   }
 
   static const _titles = ['Home', 'Diary', 'Exercise', 'Statistik', 'Riwayat'];
@@ -51,7 +43,6 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    final notifProvider = context.watch<NotificationProvider>();
 
     return Scaffold(
       key: _scaffoldKey,
@@ -76,14 +67,7 @@ class _MainShellState extends State<MainShell> {
         ),
         actions: [
           IconButton(
-            icon: Badge(
-              isLabelVisible: notifProvider.unreadCount > 0,
-              label: Text(
-                notifProvider.unreadCount.toString(),
-                style: const TextStyle(fontSize: 10),
-              ),
-              child: const Icon(Icons.notifications_none),
-            ),
+            icon: const Icon(Icons.notifications_none),
             onPressed: () async {
               await Navigator.push(
                 context,
@@ -272,14 +256,7 @@ class _MainShellState extends State<MainShell> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: ListTile(
-                      leading: Badge(
-                        isLabelVisible: context.watch<NotificationProvider>().unreadCount > 0,
-                        label: Text(
-                          context.watch<NotificationProvider>().unreadCount.toString(),
-                          style: const TextStyle(fontSize: 10),
-                        ),
-                        child: const Icon(Icons.notifications_none, color: Colors.white70),
-                      ),
+                      leading: const Icon(Icons.notifications_none, color: Colors.white70),
                       title: const Text('Notifikasi', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

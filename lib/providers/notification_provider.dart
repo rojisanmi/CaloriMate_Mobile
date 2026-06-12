@@ -1,35 +1,19 @@
 import 'package:flutter/foundation.dart';
 import '../services/notification_service.dart';
 
-/// Provider that exposes the unread-notification count to the widget tree
-/// and controls the polling lifecycle in [NotificationService].
+/// Provider that manages notification scheduling lifecycle.
+/// No longer does polling — reminders are scheduled directly
+/// into Android's AlarmManager via [NotificationService].
 class NotificationProvider extends ChangeNotifier {
-  int _unreadCount = 0;
-
-  /// Current number of unread notifications (shown as badge).
-  int get unreadCount => _unreadCount;
-
-  NotificationProvider() {
-    NotificationService.instance.onUnreadCountChanged = (count) {
-      _unreadCount = count;
-      notifyListeners();
-    };
+  /// Sync reminder schedules from the server and register
+  /// them with the OS alarm system. Call once after login.
+  Future<void> syncSchedules() async {
+    await NotificationService.instance.syncFromServer();
   }
 
-  /// Begin polling for unread notifications (call once the client is logged in).
-  void startPolling() {
-    NotificationService.instance.startPolling();
-  }
-
-  /// Stop the polling timer.
-  void stopPolling() {
-    NotificationService.instance.stopPolling();
-  }
-
-  /// Reset state on logout.
-  void reset() {
-    _unreadCount = 0;
-    stopPolling();
+  /// Cancel all scheduled reminders (call on logout).
+  Future<void> reset() async {
+    await NotificationService.instance.cancelAll();
     notifyListeners();
   }
 }

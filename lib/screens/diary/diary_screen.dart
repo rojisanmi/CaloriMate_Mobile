@@ -318,8 +318,12 @@ class _DiaryScreenState extends State<DiaryScreen> {
                     final food = rec['food'] as Map<String, dynamic>? ?? {};
                     final tag = rec['tag']?.toString() ?? '';
                     final cal = _toDouble(food['calories_per_portion']) ?? 0;
+                    final protein = _toDouble(food['total_protein']) ?? 0;
+                    final carbo = _toDouble(food['total_carbo']) ?? 0;
+                    final fat = _toDouble(food['total_fat']) ?? 0;
+                    
                     return Container(
-                      width: 150,
+                      width: 170,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -361,13 +365,23 @@ class _DiaryScreenState extends State<DiaryScreen> {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              _macroText('P: ${protein.round()}g', CmColors.protein),
+                              const SizedBox(width: 4),
+                              _macroText('K: ${carbo.round()}g', CmColors.carbs),
+                              const SizedBox(width: 4),
+                              _macroText('L: ${fat.round()}g', CmColors.fat),
+                            ],
+                          ),
                           const Spacer(),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 '${cal.round()} kkal',
-                                style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade600),
                               ),
                               InkWell(
                                 onTap: () => _quickAddRecommendation(food),
@@ -421,6 +435,13 @@ class _DiaryScreenState extends State<DiaryScreen> {
     if (v == null) return null;
     if (v is num) return v.toDouble();
     return double.tryParse(v.toString());
+  }
+
+  Widget _macroText(String text, Color color) {
+    return Text(
+      text,
+      style: TextStyle(fontSize: 9, color: color, fontWeight: FontWeight.bold),
+    );
   }
 }
 

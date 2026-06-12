@@ -3,6 +3,7 @@ import '../../config/theme.dart';
 import '../../services/api_client.dart';
 import '../../widgets/cm_background.dart';
 import '../../widgets/cm_card.dart';
+import 'active_workout_screen.dart';
 
 class ExerciseDetailScreen extends StatefulWidget {
   final int programId;
@@ -43,24 +44,38 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
   }
 
   Future<void> _start() async {
-    setState(() => _starting = true);
-    try {
-      final res = await _api.post('/client/exercise/${widget.programId}/start');
-      final msg = (res.data as Map)['message']?.toString() ?? 'Program dimulai';
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: CmColors.primaryGreen),
-        );
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _starting = false);
+    if (_program == null) return;
+    
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Mulai Program', style: TextStyle(color: CmColors.primaryGreen, fontWeight: FontWeight.bold)),
+        content: const Text('Apakah Anda yakin ingin memulai program latihan ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: CmColors.primaryGreen, foregroundColor: Colors.white),
+            child: const Text('Mulai'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+    
+    final completed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ActiveWorkoutScreen(program: _program!),
+      ),
+    );
+
+    if (completed == true && mounted) {
+      Navigator.pop(context);
     }
   }
 
