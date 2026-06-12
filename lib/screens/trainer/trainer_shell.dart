@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../config/theme.dart';
-import '../../providers/auth_provider.dart';
-import 'trainer_home_screen.dart';
+import 'trainer_dashboard_screen.dart';
+import 'trainer_foods_screen.dart';
 import 'trainer_programs_screen.dart';
-import 'trainer_history_screen.dart';
 import '../profile/trainer_profile_screen.dart';
 
 class TrainerShell extends StatefulWidget {
@@ -18,9 +16,9 @@ class _TrainerShellState extends State<TrainerShell> {
   int _index = 0;
 
   final _screens = const [
-    TrainerHomeScreen(),
+    TrainerDashboardScreen(),
+    TrainerFoodsScreen(),
     TrainerProgramsScreen(),
-    TrainerHistoryScreen(),
     TrainerProfileScreen(),
   ];
 
@@ -28,75 +26,107 @@ class _TrainerShellState extends State<TrainerShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _index, children: _screens),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _index,
-        onTap: (i) => setState(() => _index = i),
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: CmColors.primaryGreen,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.fitness_center_outlined), label: 'Program'),
-          BottomNavigationBarItem(icon: Icon(Icons.history_outlined), label: 'Riwayat'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profil'),
-        ],
-      ),
-      drawer: Drawer(
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
         child: SafeArea(
-          child: Column(
-            children: [
-              DrawerHeader(
-                decoration: const BoxDecoration(color: CmColors.primaryGreen),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: CmColors.accentOrange,
-                      radius: 28,
-                      child: Text(
-                        context.read<AuthProvider>().displayName.isNotEmpty
-                            ? context.read<AuthProvider>().displayName[0].toUpperCase()
-                            : 'T',
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: CmColors.primaryGreen,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            context.read<AuthProvider>().displayName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const Text(
-                            'Trainer',
-                            style: TextStyle(color: Colors.white70, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _NavItem(
+                  icon: Icons.dashboard_outlined,
+                  activeIcon: Icons.dashboard,
+                  label: 'Dashboard',
+                  isActive: _index == 0,
+                  onTap: () => setState(() => _index = 0),
                 ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text('Logout', style: TextStyle(color: Colors.red)),
-                onTap: () async {
-                  Navigator.pop(context);
-                  await context.read<AuthProvider>().logout();
-                },
-              ),
-            ],
+                _NavItem(
+                  icon: Icons.restaurant_menu_outlined,
+                  activeIcon: Icons.restaurant_menu,
+                  label: 'Makanan',
+                  isActive: _index == 1,
+                  onTap: () => setState(() => _index = 1),
+                ),
+                _NavItem(
+                  icon: Icons.fitness_center_outlined,
+                  activeIcon: Icons.fitness_center,
+                  label: 'Latihan',
+                  isActive: _index == 2,
+                  onTap: () => setState(() => _index = 2),
+                ),
+                _NavItem(
+                  icon: Icons.person_outline,
+                  activeIcon: Icons.person,
+                  label: 'Profil',
+                  isActive: _index == 3,
+                  onTap: () => setState(() => _index = 3),
+                ),
+              ],
+            ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _NavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive
+              ? CmColors.primaryGreen.withValues(alpha: 0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isActive ? activeIcon : icon,
+              color: isActive ? CmColors.primaryGreen : Colors.grey.shade500,
+              size: 24,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                color: isActive ? CmColors.primaryGreen : Colors.grey.shade500,
+              ),
+            ),
+          ],
         ),
       ),
     );

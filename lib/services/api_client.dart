@@ -23,19 +23,26 @@ class ApiClient {
       },
     ));
 
+  String _normalizePath(String path) {
+    if (path.startsWith('/')) {
+      return path.substring(1);
+    }
+    return path;
+  }
+
   Future<Response<T>> get<T>(String path, {Map<String, dynamic>? query}) =>
-      dio.get<T>(path, queryParameters: query);
+      dio.get<T>(_normalizePath(path), queryParameters: query);
 
   Future<Response<T>> post<T>(
     String path, {
     dynamic data,
     Options? options,
   }) =>
-      dio.post<T>(path, data: data, options: options);
+      dio.post<T>(_normalizePath(path), data: data, options: options);
 
   Future<Response<T>> delete<T>(String path, {dynamic data}) =>
-      dio.delete<T>(path, data: data);
+      dio.delete<T>(_normalizePath(path), data: data);
 
   Future<Response<T>> put<T>(String path, {dynamic data}) =>
-      dio.put<T>(path, data: data);
+      dio.put<T>(_normalizePath(path), data: data);
 }
