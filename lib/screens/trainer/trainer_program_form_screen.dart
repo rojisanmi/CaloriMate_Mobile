@@ -105,7 +105,8 @@ class _TrainerProgramFormScreenState extends State<TrainerProgramFormScreen> {
         if (validItems.isNotEmpty) data['items'] = validItems;
         await _api.post('/trainer/programs', data: data);
       } else {
-        await _api.put('/trainer/programs/${widget.program!['id']}', data: data);
+        final pid = widget.program!['program_id'] ?? widget.program!['id'];
+        await _api.put('/trainer/programs/$pid', data: data);
       }
 
       if (mounted) {

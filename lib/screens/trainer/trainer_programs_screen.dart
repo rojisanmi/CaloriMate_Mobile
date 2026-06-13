@@ -123,7 +123,7 @@ class _TrainerProgramsScreenState extends State<TrainerProgramsScreen> {
   }
 
   void _openItems(Map<String, dynamic> p) {
-    final id = (p['id'] as num?)?.toInt() ?? 0;
+    final id = (p['program_id'] as num?)?.toInt() ?? (p['id'] as num?)?.toInt() ?? 0;
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -138,16 +138,8 @@ class _TrainerProgramsScreenState extends State<TrainerProgramsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: CmColors.backgroundCream,
-      appBar: AppBar(
-        title: const Text('Kelola Latihan'),
-        automaticallyImplyLeading: false,
-        backgroundColor: CmColors.primaryGreen,
-        foregroundColor: Colors.white,
-        elevation: 2,
-      ),
-      body: CmBackground(
+    return CmBackground(
+      child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -297,7 +289,7 @@ class _TrainerProgramsScreenState extends State<TrainerProgramsScreen> {
   }
 
   Widget _buildProgramCard(Map<String, dynamic> p) {
-    final id = (p['id'] as num?)?.toInt() ?? 0;
+    final id = (p['program_id'] as num?)?.toInt() ?? (p['id'] as num?)?.toInt() ?? 0;
     final name = p['name']?.toString() ?? p['title']?.toString() ?? '';
     final type = p['type']?.toString() ?? '';
     final difficulty = p['difficulty']?.toString() ?? '';

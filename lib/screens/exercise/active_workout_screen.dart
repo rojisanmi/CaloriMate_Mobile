@@ -79,10 +79,11 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   Future<void> _finishProgram() async {
     setState(() => _isSaving = true);
     try {
-      await ApiClient.instance.post('/client/exercise/${widget.program['program_id']}/start');
+      final response = await ApiClient.instance.post('/client/exercise/${widget.program['program_id']}/start');
       if (!mounted) return;
+      final estCal = response.data['calories_burned'] ?? 0;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selamat! Latihan Selesai!'), backgroundColor: CmColors.primaryGreen),
+        SnackBar(content: Text('Selamat! Latihan Selesai! Kamu membakar ~$estCal kkal.'), backgroundColor: CmColors.primaryGreen),
       );
       Navigator.pop(context, true); // Return true to indicate completion
     } catch (e) {

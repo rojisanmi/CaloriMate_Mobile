@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
+import '../config/api_config.dart';
 import '../providers/auth_provider.dart';
 import '../providers/notification_provider.dart';
 import 'notifications/notifications_screen.dart';
@@ -39,6 +40,34 @@ class _MainShellState extends State<MainShell> {
     StatisticScreen(),
     HistoryScreen(),
   ];
+
+  Widget _buildAvatarImage(AuthProvider auth) {
+    final serverPath = auth.client?['photo_url']?.toString() ?? auth.client?['photo_path']?.toString();
+    if (serverPath != null && serverPath.isNotEmpty) {
+      final url = serverPath.startsWith('http') ? serverPath : '${ApiConfig.storageUrl.replaceAll(RegExp(r'/$'), '')}/${serverPath.replaceFirst(RegExp(r'^/'), '')}';
+      return ClipOval(
+        child: Image.network(
+          url,
+          width: 32,
+          height: 32,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _buildAvatarInitials(auth, 14),
+        ),
+      );
+    }
+    return _buildAvatarInitials(auth, 14);
+  }
+
+  Widget _buildAvatarInitials(AuthProvider auth, double fontSize) {
+    return Text(
+      auth.displayName.isNotEmpty ? auth.displayName[0].toUpperCase() : 'U',
+      style: TextStyle(
+        color: CmColors.primaryGreen,
+        fontWeight: FontWeight.bold,
+        fontSize: fontSize,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,16 +109,7 @@ class _MainShellState extends State<MainShell> {
             icon: CircleAvatar(
               radius: 16,
               backgroundColor: CmColors.accentOrange,
-              child: Text(
-                auth.displayName.isNotEmpty
-                    ? auth.displayName[0].toUpperCase()
-                    : 'U',
-                style: const TextStyle(
-                  color: CmColors.primaryGreen,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
+              child: _buildAvatarImage(auth),
             ),
             onSelected: (v) async {
               if (v == 'profile') {
@@ -169,16 +189,22 @@ class _MainShellState extends State<MainShell> {
                   CircleAvatar(
                     radius: 24,
                     backgroundColor: CmColors.accentOrange,
-                    child: Text(
-                      auth.displayName.isNotEmpty
-                          ? auth.displayName[0].toUpperCase()
-                          : 'U',
-                      style: const TextStyle(
-                        color: CmColors.primaryGreen,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
+                    child: Builder(builder: (context) {
+                      final serverPath = auth.client?['photo_url']?.toString() ?? auth.client?['photo_path']?.toString();
+                      if (serverPath != null && serverPath.isNotEmpty) {
+                        final url = serverPath.startsWith('http') ? serverPath : '${ApiConfig.storageUrl.replaceAll(RegExp(r'/$'), '')}/${serverPath.replaceFirst(RegExp(r'^/'), '')}';
+                        return ClipOval(
+                          child: Image.network(
+                            url,
+                            width: 48,
+                            height: 48,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _buildAvatarInitials(auth, 20),
+                          ),
+                        );
+                      }
+                      return _buildAvatarInitials(auth, 20);
+                    }),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

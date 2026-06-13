@@ -250,47 +250,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    CmCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            'Input Makanan',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Catat makanan per kategori seperti di web',
-                            style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-                          ),
-                          const SizedBox(height: 12),
-                          ..._mealCategories.map((cat) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: OutlinedButton.icon(
-                                  onPressed: () async {
-                                    await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => AddFoodScreen(
-                                          category: cat.$1,
-                                          categoryLabel: cat.$2,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  icon: Icon(cat.$3, size: 18),
-                                  label: Text('Tambah ${cat.$2}'),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: CmColors.primaryGreen,
-                                    side: const BorderSide(color: CmColors.primaryGreen),
-                                    padding: const EdgeInsets.symmetric(vertical: 10),
-                                  ),
-                                ),
-                              )),
-                        ],
-                      ),
-                    ),
+
                     const SizedBox(height: 12),
                     CmCard(
                       child: Column(

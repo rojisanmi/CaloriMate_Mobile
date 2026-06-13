@@ -227,21 +227,31 @@ class _TrainerFoodsScreenState extends State<TrainerFoodsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Kelola Makanan'),
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            onPressed: () => _showForm(),
-            icon: const Icon(Icons.add),
-            tooltip: 'Tambah Makanan',
-          ),
-        ],
-      ),
-      body: CmBackground(
+    return CmBackground(
+      child: SafeArea(
         child: Column(
           children: [
+            // Add Button Bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _showForm(),
+                  icon: const Icon(Icons.add, size: 20),
+                  label: const Text('Tambah Makanan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: CmColors.primaryGreen,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    elevation: 2,
+                  ),
+                ),
+              ),
+            ),
             // Search bar
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),

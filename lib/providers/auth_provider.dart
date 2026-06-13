@@ -31,7 +31,15 @@ class AuthProvider extends ChangeNotifier {
   bool get isClient => _role == 1;
   bool get isTrainer => _role == 2;
   bool get isAdmin => _role == 0;
-  String get displayName => _user?['username'] as String? ?? 'User';
+  String get displayName {
+    if (_role == 2 && trainer?['nama'] != null && trainer!['nama'].toString().isNotEmpty) {
+      return trainer!['nama'].toString();
+    }
+    if (_role == 1 && client?['nama'] != null && client!['nama'].toString().isNotEmpty) {
+      return client!['nama'].toString();
+    }
+    return _user?['username']?.toString() ?? 'User';
+  }
 
   Future<void> init() async {
     _loading = true;

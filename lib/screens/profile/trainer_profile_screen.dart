@@ -210,19 +210,11 @@ class _TrainerProfileScreenState extends State<TrainerProfileScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
 
-    return Scaffold(
-      backgroundColor: CmColors.backgroundCream,
-      appBar: AppBar(
-        title: const Text('My Profile', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
-        backgroundColor: CmColors.backgroundCream,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator(color: CmColors.primaryGreen))
-          : CmBackground(
-              child: RefreshIndicator(
+    return CmBackground(
+      child: SafeArea(
+        child: _loading
+            ? const Center(child: CircularProgressIndicator(color: CmColors.primaryGreen))
+            : RefreshIndicator(
                 color: CmColors.primaryGreen,
                 onRefresh: _load,
                 child: SingleChildScrollView(
@@ -233,6 +225,15 @@ class _TrainerProfileScreenState extends State<TrainerProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      const Text(
+                        'My Profile',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: CmColors.primaryGreen,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
                       const Text(
                         'Kelola data trainer dan sertifikasi kamu',
                         style: TextStyle(fontSize: 13, color: Colors.grey),
