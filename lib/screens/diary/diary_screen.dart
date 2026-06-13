@@ -11,10 +11,12 @@ class DiaryScreen extends StatefulWidget {
   const DiaryScreen({super.key});
 
   @override
-  State<DiaryScreen> createState() => _DiaryScreenState();
+  State<DiaryScreen> createState() => DiaryScreenState();
 }
 
-class _DiaryScreenState extends State<DiaryScreen> {
+class DiaryScreenState extends State<DiaryScreen> {
+  void reload() => _load();
+
   final _api = ApiClient.instance;
   bool _loading = true;
   Map<String, dynamic>? _data;

@@ -83,6 +83,13 @@ class _TrainerShellState extends State<TrainerShell> {
         ),
         actions: [
           PopupMenuButton<String>(
+            offset: const Offset(0, 48),
+            tooltip: 'Akun',
+            color: Colors.white,
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             icon: CircleAvatar(
               radius: 16,
               backgroundColor: CmColors.accentOrange,
@@ -95,9 +102,66 @@ class _TrainerShellState extends State<TrainerShell> {
                 await auth.logout();
               }
             },
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'profile', child: Text('Profil')),
-              PopupMenuItem(value: 'logout', child: Text('Logout')),
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'profile',
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor: CmColors.accentOrange,
+                      child: _buildAvatarImage(auth),
+                    ),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            auth.displayName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: CmColors.primaryGreen,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            auth.user?['email']?.toString() ?? 'Lihat Profil',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey.shade500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const PopupMenuDivider(),
+              PopupMenuItem(
+                value: 'profile',
+                child: Row(
+                  children: const [
+                    Icon(Icons.person_outline, size: 20, color: CmColors.primaryGreen),
+                    SizedBox(width: 12),
+                    Text('Profil'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: const [
+                    Icon(Icons.logout, size: 20, color: Colors.redAccent),
+                    SizedBox(width: 12),
+                    Text('Logout', style: TextStyle(color: Colors.redAccent)),
+                  ],
+                ),
+              ),
             ],
           ),
           const SizedBox(width: 8),

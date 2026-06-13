@@ -9,10 +9,12 @@ class StatisticScreen extends StatefulWidget {
   const StatisticScreen({super.key});
 
   @override
-  State<StatisticScreen> createState() => _StatisticScreenState();
+  State<StatisticScreen> createState() => StatisticScreenState();
 }
 
-class _StatisticScreenState extends State<StatisticScreen> {
+class StatisticScreenState extends State<StatisticScreen> {
+  void reload() => _load();
+
   final _api = ApiClient.instance;
   bool _loading = true;
   Map<String, dynamic>? _data;
@@ -285,7 +287,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
 
   String _formatDate(String date) {
     try {
-      return DateFormat('d MMMM yyyy', 'id_ID').format(DateTime.parse(date));
+      return DateFormat('d MMMM yyyy', 'id_ID').format(DateTime.parse(date).toLocal());
     } catch (_) {
       return date;
     }

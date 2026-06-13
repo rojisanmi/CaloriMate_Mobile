@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/notification_provider.dart';
 import '../../services/api_client.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -62,6 +64,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               .toList();
         }
       });
+
+      // Perbarui badge di lonceng secara langsung
+      final notif = context.read<NotificationProvider>();
+      if (id == null) {
+        notif.clearUnread();
+      } else {
+        notif.refreshUnread();
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

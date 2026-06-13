@@ -408,58 +408,49 @@ class _TrainerProgramsScreenState extends State<TrainerProgramsScreen> {
                   ),
                 ),
                 const SizedBox(width: 6),
-                Expanded(
-                  child: SizedBox(
-                    height: 32,
-                    child: PopupMenuButton<String>(
-                      onSelected: (val) {
-                        if (val == 'edit') _openForm(p);
-                        if (val == 'delete') _delete(id);
-                      },
-                      itemBuilder: (_) => [
-                        const PopupMenuItem(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              Icon(Icons.edit_outlined, size: 16, color: CmColors.primaryGreen),
-                              SizedBox(width: 8),
-                              Text('Edit', style: TextStyle(fontSize: 13)),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              Icon(Icons.delete_outline, size: 16, color: Colors.red),
-                              SizedBox(width: 8),
-                              Text('Hapus', style: TextStyle(color: Colors.red, fontSize: 13)),
-                            ],
-                          ),
-                        ),
-                      ],
-                      child: Container(
-                        height: 32,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                SizedBox(
+                  height: 32,
+                  width: 36,
+                  child: PopupMenuButton<String>(
+                    tooltip: 'Aksi',
+                    padding: EdgeInsets.zero,
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    onSelected: (val) {
+                      if (val == 'edit') _openForm(p);
+                      if (val == 'delete') _delete(id);
+                    },
+                    itemBuilder: (_) => [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
                           children: [
-                            Text(
-                              'Edit',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black54,
-                              ),
-                            ),
-                            SizedBox(width: 2),
-                            Icon(Icons.arrow_drop_down, size: 14, color: Colors.black38),
+                            Icon(Icons.edit_outlined, size: 16, color: CmColors.primaryGreen),
+                            SizedBox(width: 8),
+                            Text('Edit', style: TextStyle(fontSize: 13)),
                           ],
                         ),
                       ),
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_outline, size: 16, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Hapus', style: TextStyle(color: Colors.red, fontSize: 13)),
+                          ],
+                        ),
+                      ),
+                    ],
+                    child: Container(
+                      height: 32,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.more_vert, size: 18, color: Colors.black54),
                     ),
                   ),
                 ),

@@ -376,6 +376,12 @@ class _TrainerFoodsScreenState extends State<TrainerFoodsScreen> {
                   ),
                 ),
                 PopupMenuButton<String>(
+                  tooltip: 'Aksi',
+                  icon: const Icon(Icons.more_vert, color: Colors.black54),
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   onSelected: (val) {
                     if (val == 'edit') {
                       _showForm(f);
@@ -383,12 +389,26 @@ class _TrainerFoodsScreenState extends State<TrainerFoodsScreen> {
                       _delete(foodId);
                     }
                   },
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(value: 'edit', child: Text('Edit')),
-                    PopupMenuItem(
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit_outlined, size: 16, color: CmColors.primaryGreen),
+                          SizedBox(width: 8),
+                          Text('Edit', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
                       value: 'delete',
-                      child:
-                          Text('Hapus', style: TextStyle(color: Colors.red)),
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_outline, size: 16, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text('Hapus', style: TextStyle(color: Colors.red, fontSize: 13)),
+                        ],
+                      ),
                     ),
                   ],
                 ),

@@ -90,7 +90,20 @@ class NotificationService {
       final data = response.data;
       if (data is! Map<String, dynamic>) return;
 
-      final client = data['client'] ?? data;
+      // API membungkus data client di dalam {user: {client: {...}}}.
+      // Tangani beberapa kemungkinan bentuk respons secara aman.
+      Map<String, dynamic> client;
+      final user = data['user'];
+      if (user is Map && user['client'] is Map) {
+        client = Map<String, dynamic>.from(user['client'] as Map);
+      } else if (user is Map) {
+        client = Map<String, dynamic>.from(user);
+      } else if (data['client'] is Map) {
+        client = Map<String, dynamic>.from(data['client'] as Map);
+      } else {
+        client = data;
+      }
+
       final foodTime = _parseTime(client['food_reminder_time']?.toString());
       final exerciseTime = _parseTime(client['exercise_reminder_time']?.toString());
 

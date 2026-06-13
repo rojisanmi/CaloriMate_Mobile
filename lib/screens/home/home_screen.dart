@@ -50,8 +50,8 @@ class HomeScreen extends StatelessWidget {
                 alignment: Alignment.center,
                 children: [
                   Container(
-                    width: 200,
-                    height: 200,
+                    width: 240,
+                    height: 360,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: CmColors.accentOrange.withValues(alpha: 0.1),
@@ -61,9 +61,8 @@ class HomeScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(24),
                     child: Image.asset(
                       'assets/images/dashboard-hero.jpeg',
-                      width: 220,
-                      height: 180,
-                      fit: BoxFit.cover,
+                      width: 240,
+                      fit: BoxFit.fitWidth,
                     ),
                   ),
                 ],

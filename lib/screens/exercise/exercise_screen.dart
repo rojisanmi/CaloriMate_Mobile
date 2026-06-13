@@ -10,10 +10,12 @@ class ExerciseScreen extends StatefulWidget {
   const ExerciseScreen({super.key});
 
   @override
-  State<ExerciseScreen> createState() => _ExerciseScreenState();
+  State<ExerciseScreen> createState() => ExerciseScreenState();
 }
 
-class _ExerciseScreenState extends State<ExerciseScreen> {
+class ExerciseScreenState extends State<ExerciseScreen> {
+  void reload() => _load();
+
   final _api = ApiClient.instance;
   bool _loading = true;
   List<Map<String, dynamic>> _programs = [];

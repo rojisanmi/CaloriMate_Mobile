@@ -19,27 +19,72 @@ class MainShell extends StatefulWidget {
   State<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<MainShell> {
+class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   int _index = 0;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<NotificationProvider>().syncSchedules();
+      final notif = context.read<NotificationProvider>();
+      notif.syncSchedules();
+      notif.refreshUnread();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Saat app kembali aktif: ambil ulang waktu reminder dari server
+    // (mis. client mengubahnya lewat web) dan segarkan badge notifikasi.
+    if (state == AppLifecycleState.resumed && mounted) {
+      final notif = context.read<NotificationProvider>();
+      notif.syncSchedules();
+      notif.refreshUnread();
+    }
   }
 
   static const _titles = ['Home', 'Diary', 'Exercise', 'Statistik', 'Riwayat'];
 
-  final _screens = const [
-    HomeScreen(),
-    DiaryScreen(),
-    ExerciseScreen(),
-    StatisticScreen(),
-    HistoryScreen(),
+  final _diaryKey = GlobalKey<DiaryScreenState>();
+  final _exerciseKey = GlobalKey<ExerciseScreenState>();
+  final _statisticKey = GlobalKey<StatisticScreenState>();
+  final _historyKey = GlobalKey<HistoryScreenState>();
+
+  late final _screens = [
+    const HomeScreen(),
+    DiaryScreen(key: _diaryKey),
+    ExerciseScreen(key: _exerciseKey),
+    StatisticScreen(key: _statisticKey),
+    HistoryScreen(key: _historyKey),
   ];
+
+  /// Pindah tab + muat ulang data tab tujuan (karena IndexedStack menjaga
+  /// state, screen tidak otomatis reload saat ditampilkan kembali).
+  void _selectTab(int i) {
+    setState(() => _index = i);
+    switch (i) {
+      case 1:
+        _diaryKey.currentState?.reload();
+        break;
+      case 2:
+        _exerciseKey.currentState?.reload();
+        break;
+      case 3:
+        _statisticKey.currentState?.reload();
+        break;
+      case 4:
+        _historyKey.currentState?.reload();
+        break;
+    }
+  }
 
   Widget _buildAvatarImage(AuthProvider auth) {
     final serverPath = auth.client?['photo_url']?.toString() ?? auth.client?['photo_path']?.toString();
@@ -96,16 +141,37 @@ class _MainShellState extends State<MainShell> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none),
+            icon: Builder(
+              builder: (context) {
+                final unread = context.watch<NotificationProvider>().unreadCount;
+                final icon = const Icon(Icons.notifications_none);
+                if (unread <= 0) return icon;
+                return Badge(
+                  label: Text(unread > 99 ? '99+' : '$unread'),
+                  backgroundColor: CmColors.accentOrange,
+                  child: icon,
+                );
+              },
+            ),
             onPressed: () async {
+              final notif = context.read<NotificationProvider>();
               await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const NotificationsScreen()),
               );
+              // Segarkan badge setelah kembali (mis. user menandai dibaca)
+              notif.refreshUnread();
             },
             tooltip: 'Notifikasi',
           ),
           PopupMenuButton<String>(
+            offset: const Offset(0, 48),
+            tooltip: 'Akun',
+            color: Colors.white,
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             icon: CircleAvatar(
               radius: 16,
               backgroundColor: CmColors.accentOrange,
@@ -121,9 +187,66 @@ class _MainShellState extends State<MainShell> {
                 await auth.logout();
               }
             },
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'profile', child: Text('Profil')),
-              PopupMenuItem(value: 'logout', child: Text('Logout')),
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'profile',
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor: CmColors.accentOrange,
+                      child: _buildAvatarImage(auth),
+                    ),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            auth.displayName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: CmColors.primaryGreen,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            auth.user?['email']?.toString() ?? 'Lihat Profil',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey.shade500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const PopupMenuDivider(),
+              PopupMenuItem(
+                value: 'profile',
+                child: Row(
+                  children: const [
+                    Icon(Icons.person_outline, size: 20, color: CmColors.primaryGreen),
+                    SizedBox(width: 12),
+                    Text('Profil'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: const [
+                    Icon(Icons.logout, size: 20, color: Colors.redAccent),
+                    SizedBox(width: 12),
+                    Text('Logout', style: TextStyle(color: Colors.redAccent)),
+                  ],
+                ),
+              ),
             ],
           ),
           const SizedBox(width: 8),
@@ -133,7 +256,7 @@ class _MainShellState extends State<MainShell> {
       body: IndexedStack(index: _index, children: _screens),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
+        onDestinationSelected: _selectTab,
         backgroundColor: Colors.white,
         indicatorColor: CmColors.accentOrange.withValues(alpha: 0.3),
         destinations: const [
@@ -272,7 +395,7 @@ class _MainShellState extends State<MainShell> {
                         ),
                         tileColor: active ? CmColors.accentOrange : null,
                         onTap: () {
-                          setState(() => _index = item.$3);
+                          _selectTab(item.$3);
                           Navigator.pop(context);
                         },
                       ),

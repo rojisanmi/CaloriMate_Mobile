@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../config/theme.dart';
 import '../../services/api_client.dart';
 import '../../widgets/cm_background.dart';
@@ -9,10 +10,12 @@ class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
 
   @override
-  State<HistoryScreen> createState() => _HistoryScreenState();
+  State<HistoryScreen> createState() => HistoryScreenState();
 }
 
-class _HistoryScreenState extends State<HistoryScreen> {
+class HistoryScreenState extends State<HistoryScreen> {
+  void reload() => _load();
+
   final _api = ApiClient.instance;
   bool _loading = true;
   String _period = 'daily';
@@ -242,6 +245,19 @@ class _ChartSection extends StatelessWidget {
   }
 }
 
+String _formatDate(dynamic raw) {
+  final s = raw?.toString() ?? '';
+  if (s.isEmpty) return '';
+  final dt = DateTime.tryParse(s);
+  if (dt == null) return s;
+  final local = dt.toLocal();
+  // Tampilkan jam hanya jika bukan tengah malam
+  final pattern = (local.hour == 0 && local.minute == 0)
+      ? 'd MMM yyyy'
+      : 'd MMM yyyy, HH:mm';
+  return DateFormat(pattern, 'id_ID').format(local);
+}
+
 class _HistoryList extends StatelessWidget {
   final List items;
   final String emptyAsset;
@@ -276,7 +292,11 @@ class _HistoryList extends StatelessWidget {
           return ListTile(
             dense: true,
             title: Text(m['name']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: Text(m['date']?.toString() ?? ''),
+            subtitle: Text(
+              m['portions'] != null
+                  ? '${m['portions']} porsi · ${_formatDate(m['date'])}'
+                  : _formatDate(m['date']),
+            ),
             trailing: Text(
               '${m['calories'] ?? 0} kkal',
               style: const TextStyle(fontWeight: FontWeight.bold, color: CmColors.primaryGreen),
@@ -314,7 +334,7 @@ class _ActivityList extends StatelessWidget {
             dense: true,
             leading: const Icon(Icons.fitness_center, color: CmColors.accentOrange, size: 20),
             title: Text(m['program_name']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: Text(m['date']?.toString() ?? ''),
+            subtitle: Text(_formatDate(m['date'])),
             trailing: Text(
               '${m['calories_out'] ?? 0} kkal',
               style: const TextStyle(fontWeight: FontWeight.bold, color: CmColors.primaryGreen, fontSize: 12),
