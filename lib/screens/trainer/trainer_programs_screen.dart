@@ -3,7 +3,6 @@ import '../../config/theme.dart';
 import '../../services/api_client.dart';
 import '../../widgets/cm_background.dart';
 import 'trainer_program_form_screen.dart';
-import 'trainer_items_screen.dart';
 
 class TrainerProgramsScreen extends StatefulWidget {
   const TrainerProgramsScreen({super.key});
@@ -122,19 +121,6 @@ class _TrainerProgramsScreenState extends State<TrainerProgramsScreen> {
     _load();
   }
 
-  void _openItems(Map<String, dynamic> p) {
-    final id = (p['program_id'] as num?)?.toInt() ?? (p['id'] as num?)?.toInt() ?? 0;
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => TrainerItemsScreen(
-          programId: id,
-          programTitle: p['name']?.toString() ?? p['title']?.toString() ?? 'Program',
-          programData: p,
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -390,7 +376,7 @@ class _TrainerProgramsScreenState extends State<TrainerProgramsScreen> {
                   child: SizedBox(
                     height: 32,
                     child: ElevatedButton(
-                      onPressed: () => _openItems(p),
+                      onPressed: () => _openForm(p),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: CmColors.primaryGreen,
                         foregroundColor: Colors.white,
@@ -401,7 +387,7 @@ class _TrainerProgramsScreenState extends State<TrainerProgramsScreen> {
                         elevation: 0,
                       ),
                       child: const Text(
-                        'Detail',
+                        'Kelola',
                         style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
                       ),
                     ),
@@ -419,20 +405,9 @@ class _TrainerProgramsScreenState extends State<TrainerProgramsScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     onSelected: (val) {
-                      if (val == 'edit') _openForm(p);
                       if (val == 'delete') _delete(id);
                     },
                     itemBuilder: (_) => [
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit_outlined, size: 16, color: CmColors.primaryGreen),
-                            SizedBox(width: 8),
-                            Text('Edit', style: TextStyle(fontSize: 13)),
-                          ],
-                        ),
-                      ),
                       const PopupMenuItem(
                         value: 'delete',
                         child: Row(

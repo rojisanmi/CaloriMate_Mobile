@@ -42,6 +42,13 @@ class AuthProvider extends ChangeNotifier {
     return _user?['username']?.toString() ?? 'User';
   }
 
+  /// Bersihkan pesan error (mis. saat user mulai mengetik ulang).
+  void clearError() {
+    if (_error == null) return;
+    _error = null;
+    notifyListeners();
+  }
+
   Future<void> init() async {
     _loading = true;
     notifyListeners();
@@ -122,6 +129,7 @@ class AuthProvider extends ChangeNotifier {
     required double bb,
     required String gender,
     required int umur,
+    required String photoPath,
   }) async {
     _error = null;
     _loading = true;
@@ -135,42 +143,13 @@ class AuthProvider extends ChangeNotifier {
         beratBadan: bb,
         gender: gender,
         umur: umur,
+        photoPath: photoPath,
       );
       _user = data['user'] as Map<String, dynamic>;
       _role = 1;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('user_role', _role);
       await fetchProfile();
-      _loading = false;
-      notifyListeners();
-      return true;
-    } on DioException catch (e) {
-      _error = _parseError(e);
-      _loading = false;
-      notifyListeners();
-      return false;
-    }
-  }
-
-  Future<bool> registerAsTrainer({
-    required String username,
-    required String email,
-    required String password,
-  }) async {
-    _error = null;
-    _loading = true;
-    notifyListeners();
-    try {
-      final data = await _auth.registerTrainer(
-        username: username,
-        email: email,
-        password: password,
-      );
-      _user = data['user'] as Map<String, dynamic>;
-      _role = 2;
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('user_role', _role);
-      await fetchTrainerProfile();
       _loading = false;
       notifyListeners();
       return true;

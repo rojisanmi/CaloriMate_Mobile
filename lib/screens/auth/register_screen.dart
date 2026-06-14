@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
@@ -21,7 +24,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _bb = TextEditingController();
   final _umur = TextEditingController();
   String _gender = 'L';
-  int _selectedRole = 1; // 1 = Client, 2 = Trainer
+  final _picker = ImagePicker();
+  String? _photoPath;
+
+  Future<void> _pickPhoto() async {
+    final x = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (x != null) setState(() => _photoPath = x.path);
+  }
 
   @override
   void dispose() {
@@ -36,26 +45,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_photoPath == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Foto profil wajib diunggah.'),
+          backgroundColor: Colors.red.shade700,
+        ),
+      );
+      return;
+    }
     final auth = context.read<AuthProvider>();
 
-    bool ok;
-    if (_selectedRole == 2) {
-      ok = await auth.registerAsTrainer(
-        username: _username.text.trim(),
-        email: _email.text.trim(),
-        password: _password.text,
-      );
-    } else {
-      ok = await auth.register(
-        username: _username.text.trim(),
-        email: _email.text.trim(),
-        password: _password.text,
-        tb: double.parse(_tb.text),
-        bb: double.parse(_bb.text),
-        gender: _gender,
-        umur: int.parse(_umur.text),
-      );
-    }
+    final ok = await auth.register(
+      username: _username.text.trim(),
+      email: _email.text.trim(),
+      password: _password.text,
+      tb: double.parse(_tb.text),
+      bb: double.parse(_bb.text),
+      gender: _gender,
+      umur: int.parse(_umur.text),
+      photoPath: _photoPath!,
+    );
 
     if (!ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -100,60 +110,74 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
-                    // ── Role Toggle ──────────────────────
-                    Container(
-                      decoration: BoxDecoration(
-                        color: CmColors.backgroundCream,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.all(4),
-                      child: Row(
-                        children: [
-                          _roleTab('Client', 1),
-                          _roleTab('Trainer', 2),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    _field(_username, 'Username', maxLen: 20),
-                    const SizedBox(height: 12),
-                    _field(_email, 'Email', keyboard: TextInputType.emailAddress),
-                    const SizedBox(height: 12),
-                    _field(_password, 'Password', obscure: true),
-                    // Client-only fields
-                    if (_selectedRole == 1) ...[
-                      const SizedBox(height: 12),
-                      _field(_tb, 'Tinggi Badan (cm)', keyboard: TextInputType.number),
-                      const SizedBox(height: 12),
-                      _field(_bb, 'Berat Badan (kg)', keyboard: TextInputType.number),
-                      const SizedBox(height: 12),
-                      _field(_umur, 'Umur', keyboard: TextInputType.number),
-                      const SizedBox(height: 12),
-                      const Text('Jenis Kelamin',
-                          style: TextStyle(fontWeight: FontWeight.w600, color: CmColors.primaryGreen)),
-                      RadioGroup<String>(
-                        groupValue: _gender,
-                        onChanged: (v) => setState(() => _gender = v!),
-                        child: Row(
-                          children: const [
-                            Expanded(
-                              child: RadioListTile<String>(
-                                title: Text('Laki-laki'),
-                                value: 'L',
-                                contentPadding: EdgeInsets.zero,
-                              ),
+                    Center(
+                      child: GestureDetector(
+                        onTap: _pickPhoto,
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              radius: 44,
+                              backgroundColor: CmColors.backgroundCream,
+                              backgroundImage: _photoPath != null
+                                  ? FileImage(File(_photoPath!))
+                                  : null,
+                              child: _photoPath == null
+                                  ? const Icon(Icons.add_a_photo_outlined,
+                                      color: CmColors.primaryGreen, size: 28)
+                                  : null,
                             ),
-                            Expanded(
-                              child: RadioListTile<String>(
-                                title: Text('Perempuan'),
-                                value: 'P',
-                                contentPadding: EdgeInsets.zero,
+                            const SizedBox(height: 6),
+                            Text(
+                              _photoPath == null
+                                  ? 'Tambah Foto Profil'
+                                  : 'Ganti Foto',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: CmColors.primaryGreen,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ],
+                    ),
+                    const SizedBox(height: 16),
+                    _field(_username, 'Username', maxLen: 20),
+                    const SizedBox(height: 12),
+                    _field(_email, 'Email', keyboard: TextInputType.emailAddress),
+                    const SizedBox(height: 12),
+                    _field(_password, 'Password', obscure: true),
+                    const SizedBox(height: 12),
+                    _field(_tb, 'Tinggi Badan (cm)', keyboard: TextInputType.number),
+                    const SizedBox(height: 12),
+                    _field(_bb, 'Berat Badan (kg)', keyboard: TextInputType.number),
+                    const SizedBox(height: 12),
+                    _field(_umur, 'Umur', keyboard: TextInputType.number),
+                    const SizedBox(height: 12),
+                    const Text('Jenis Kelamin',
+                        style: TextStyle(fontWeight: FontWeight.w600, color: CmColors.primaryGreen)),
+                    RadioGroup<String>(
+                      groupValue: _gender,
+                      onChanged: (v) => setState(() => _gender = v!),
+                      child: Row(
+                        children: const [
+                          Expanded(
+                            child: RadioListTile<String>(
+                              title: Text('Laki-laki'),
+                              value: 'L',
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                          Expanded(
+                            child: RadioListTile<String>(
+                              title: Text('Perempuan'),
+                              value: 'P',
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: auth.loading ? null : _submit,
@@ -166,37 +190,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 color: Colors.white,
                               ),
                             )
-                          : Text('Daftar sebagai ${_selectedRole == 1 ? 'Client' : 'Trainer'}'),
+                          : const Text('Daftar'),
                     ),
                   ],
                 ),
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _roleTab(String label, int role) {
-    final selected = _selectedRole == role;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _selectedRole = role),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: selected ? CmColors.primaryGreen : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: selected ? Colors.white : CmColors.primaryGreen,
-              fontSize: 14,
             ),
           ),
         ),

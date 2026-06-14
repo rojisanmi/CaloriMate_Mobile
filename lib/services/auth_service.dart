@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_client.dart';
 
@@ -29,8 +30,9 @@ class AuthService {
     required double beratBadan,
     required String gender,
     required int umur,
+    required String photoPath,
   }) async {
-    final res = await _api.post('/register/client', data: {
+    final form = FormData.fromMap({
       'username': username,
       'email': email,
       'password': password,
@@ -38,23 +40,13 @@ class AuthService {
       'berat_badan': beratBadan,
       'gender': gender,
       'umur': umur,
+      'photo': await MultipartFile.fromFile(photoPath),
     });
-    final data = res.data as Map<String, dynamic>;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('access_token', data['access_token'] as String);
-    return data;
-  }
-
-  Future<Map<String, dynamic>> registerTrainer({
-    required String username,
-    required String email,
-    required String password,
-  }) async {
-    final res = await _api.post('/register/trainer', data: {
-      'username': username,
-      'email': email,
-      'password': password,
-    });
+    final res = await _api.dio.post(
+      '/register/client',
+      data: form,
+      options: Options(contentType: 'multipart/form-data'),
+    );
     final data = res.data as Map<String, dynamic>;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('access_token', data['access_token'] as String);

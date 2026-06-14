@@ -17,6 +17,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _password = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   int _selectedRole = 1; // 1 = Client, 2 = Trainer
+  String? _usernameError;
+  String? _passwordError;
 
   @override
   void dispose() {
@@ -26,21 +28,27 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    final auth = context.read<AuthProvider>();
-    final ok = await auth.login(
-      _username.text.trim(),
-      _password.text,
-      role: _selectedRole,
-    );
-    if (!ok && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.error ?? 'Login gagal'),
-          backgroundColor: Colors.red.shade700,
-        ),
-      );
+    // Validasi berurutan: username dulu, baru password (tidak dua-duanya sekaligus).
+    setState(() {
+      _usernameError = null;
+      _passwordError = null;
+    });
+    if (_username.text.trim().isEmpty) {
+      setState(() => _usernameError = 'Username wajib diisi');
+      return;
     }
+    if (_password.text.isEmpty) {
+      setState(() => _passwordError = 'Password wajib diisi');
+      return;
+    }
+    FocusScope.of(context).unfocus();
+    // Error dari server (mis. "Username atau password salah.") ditampilkan
+    // inline lewat auth.error di bawah tombol.
+    await context.read<AuthProvider>().login(
+          _username.text.trim(),
+          _password.text,
+          role: _selectedRole,
+        );
   }
 
   @override
@@ -126,25 +134,49 @@ class _LoginScreenState extends State<LoginScreen> {
                                   const SizedBox(height: 20),
                                   TextFormField(
                                     controller: _username,
-                                    decoration: const InputDecoration(
+                                    onChanged: (_) {
+                                      context.read<AuthProvider>().clearError();
+                                      if (_usernameError != null) {
+                                        setState(() => _usernameError = null);
+                                      }
+                                    },
+                                    decoration: InputDecoration(
                                       labelText: 'Username',
                                       hintText: 'Username',
+                                      errorText: _usernameError,
                                     ),
-                                    validator: (v) =>
-                                        v == null || v.isEmpty ? 'Wajib diisi' : null,
                                   ),
                                   const SizedBox(height: 12),
                                   TextFormField(
                                     controller: _password,
                                     obscureText: true,
-                                    decoration: const InputDecoration(
+                                    onChanged: (_) {
+                                      context.read<AuthProvider>().clearError();
+                                      if (_passwordError != null) {
+                                        setState(() => _passwordError = null);
+                                      }
+                                    },
+                                    decoration: InputDecoration(
                                       labelText: 'Password',
                                       hintText: 'Password',
+                                      errorText: _passwordError,
                                     ),
-                                    validator: (v) =>
-                                        v == null || v.isEmpty ? 'Wajib diisi' : null,
                                   ),
-                                  const SizedBox(height: 24),
+                                  const SizedBox(height: 16),
+                                  // Pesan error dari server (login gagal), tampil inline
+                                  if (auth.error != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 12),
+                                      child: Text(
+                                        auth.error!,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.red.shade700,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
                                   SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton(
