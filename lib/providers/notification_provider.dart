@@ -9,12 +9,6 @@ class NotificationProvider extends ChangeNotifier {
   int _unreadCount = 0;
   int get unreadCount => _unreadCount;
 
-  /// Sync reminder schedules from the server and register
-  /// them with the OS alarm system. Call once after login.
-  Future<void> syncSchedules() async {
-    await NotificationService.instance.syncFromServer();
-  }
-
   /// Fetch the unread notification count from the server and notify listeners
   /// so badges (e.g. on the bell icon) update.
   Future<void> refreshUnread() async {

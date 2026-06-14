@@ -190,7 +190,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
           width: 56,
           height: 56,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _buildAvatarInitials(auth),
+          errorBuilder: (_, _, _) => _buildAvatarInitials(auth),
         ),
       );
     }
@@ -495,7 +495,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                                 ),
                               ),
                               Text(
-                                '${freq}×',
+                                '$freq×',
                                 style: const TextStyle(
                                   color: Colors.grey,
                                   fontSize: 10,

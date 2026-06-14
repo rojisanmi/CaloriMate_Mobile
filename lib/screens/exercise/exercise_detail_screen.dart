@@ -22,7 +22,7 @@ class ExerciseDetailScreen extends StatefulWidget {
 class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
   final _api = ApiClient.instance;
   bool _loading = true;
-  bool _starting = false;
+  final bool _starting = false;
   Map<String, dynamic>? _program;
 
   @override
@@ -66,16 +66,17 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     );
 
     if (confirm != true) return;
-    
-    final completed = await Navigator.push<bool>(
-      context,
+    if (!mounted) return;
+
+    final navigator = Navigator.of(context);
+    final completed = await navigator.push<bool>(
       MaterialPageRoute(
         builder: (_) => ActiveWorkoutScreen(program: _program!),
       ),
     );
 
-    if (completed == true && mounted) {
-      Navigator.pop(context);
+    if (completed == true) {
+      navigator.pop();
     }
   }
 

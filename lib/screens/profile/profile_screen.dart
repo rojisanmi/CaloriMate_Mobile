@@ -14,7 +14,6 @@ import '../../services/notification_service.dart';
 import '../../config/api_config.dart';
 import '../../widgets/cm_background.dart';
 import '../../widgets/cm_card.dart';
-import '../diary/add_food_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -36,13 +35,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   TimeOfDay? _foodReminderTime;
   TimeOfDay? _exerciseReminderTime;
   final _picker = ImagePicker();
-
-  static const _mealCategories = [
-    ('breakfast', 'Sarapan', Icons.free_breakfast_outlined),
-    ('lunch', 'Makan Siang', Icons.lunch_dining_outlined),
-    ('dinner', 'Makan Malam', Icons.dinner_dining_outlined),
-    ('snack', 'Camilan', Icons.cookie_outlined),
-  ];
 
   @override
   void initState() {
@@ -124,9 +116,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (!mounted) return;
       await context.read<AuthProvider>().fetchProfile();
 
-      // Schedule local notifications based on saved reminder times
-      await NotificationService.instance.scheduleFoodReminder(_foodReminderTime);
-      await NotificationService.instance.scheduleExerciseReminder(_exerciseReminderTime);
+      // Reminder pop-up kini dikirim sebagai push FCM dari server (berlaku
+      // untuk set via web maupun mobile). Batalkan alarm lokal agar tidak dobel.
+      await NotificationService.instance.cancelLocalReminders();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -336,27 +328,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             'Jenis Kelamin',
                             style: TextStyle(fontWeight: FontWeight.w600, color: CmColors.primaryGreen),
                           ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: RadioListTile<String>(
-                                  title: const Text('Laki-laki'),
-                                  value: 'L',
-                                  groupValue: _gender,
-                                  onChanged: (v) => setState(() => _gender = v!),
-                                  contentPadding: EdgeInsets.zero,
+                          RadioGroup<String>(
+                            groupValue: _gender,
+                            onChanged: (v) => setState(() => _gender = v!),
+                            child: Row(
+                              children: const [
+                                Expanded(
+                                  child: RadioListTile<String>(
+                                    title: Text('Laki-laki'),
+                                    value: 'L',
+                                    contentPadding: EdgeInsets.zero,
+                                  ),
                                 ),
-                              ),
-                              Expanded(
-                                child: RadioListTile<String>(
-                                  title: const Text('Perempuan'),
-                                  value: 'P',
-                                  groupValue: _gender,
-                                  onChanged: (v) => setState(() => _gender = v!),
-                                  contentPadding: EdgeInsets.zero,
+                                Expanded(
+                                  child: RadioListTile<String>(
+                                    title: Text('Perempuan'),
+                                    value: 'P',
+                                    contentPadding: EdgeInsets.zero,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton(
@@ -408,7 +400,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           width: 92,
           height: 92,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _initialsWidget(auth),
+          errorBuilder: (_, _, _) => _initialsWidget(auth),
         ),
       );
     }

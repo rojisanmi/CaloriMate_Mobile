@@ -189,6 +189,7 @@ class _TrainerFoodsScreenState extends State<TrainerFoodsScreen> {
                     'total_carbo': double.tryParse(carboCtrl.text) ?? 0,
                     'total_protein': double.tryParse(proteinCtrl.text) ?? 0,
                   };
+                  final navigator = Navigator.of(ctx);
                   try {
                     if (isEditing) {
                       final foodId = food['food_id'] ?? food['id'];
@@ -196,7 +197,7 @@ class _TrainerFoodsScreenState extends State<TrainerFoodsScreen> {
                     } else {
                       await _api.post('/trainer/foods', data: data);
                     }
-                    if (mounted) Navigator.pop(ctx);
+                    navigator.pop();
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

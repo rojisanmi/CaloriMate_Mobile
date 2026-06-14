@@ -4,6 +4,7 @@ import '../config/theme.dart';
 import '../config/api_config.dart';
 import '../providers/auth_provider.dart';
 import '../providers/notification_provider.dart';
+import '../services/push_service.dart';
 import 'notifications/notifications_screen.dart';
 import 'home/home_screen.dart';
 import 'diary/diary_screen.dart';
@@ -27,17 +28,33 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    reminderNavIntent.addListener(_handleReminderNav);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final notif = context.read<NotificationProvider>();
-      notif.syncSchedules();
       notif.refreshUnread();
+      PushService.instance.registerToken();
+      // Tangani jika app dibuka dari tap notifikasi (terminated state).
+      _handleReminderNav();
     });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    reminderNavIntent.removeListener(_handleReminderNav);
     super.dispose();
+  }
+
+  /// Pindah ke tab terkait saat user menekan notifikasi reminder.
+  void _handleReminderNav() {
+    final type = reminderNavIntent.value;
+    if (type == null || !mounted) return;
+    if (type == 'food') {
+      _selectTab(1); // Diary
+    } else if (type == 'exercise') {
+      _selectTab(2); // Exercise
+    }
+    reminderNavIntent.value = null;
   }
 
   @override
@@ -45,9 +62,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     // Saat app kembali aktif: ambil ulang waktu reminder dari server
     // (mis. client mengubahnya lewat web) dan segarkan badge notifikasi.
     if (state == AppLifecycleState.resumed && mounted) {
-      final notif = context.read<NotificationProvider>();
-      notif.syncSchedules();
-      notif.refreshUnread();
+      context.read<NotificationProvider>().refreshUnread();
     }
   }
 
@@ -96,7 +111,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
           width: 32,
           height: 32,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _buildAvatarInitials(auth, 14),
+          errorBuilder: (_, _, _) => _buildAvatarInitials(auth, 14),
         ),
       );
     }
@@ -322,7 +337,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
                             width: 48,
                             height: 48,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _buildAvatarInitials(auth, 20),
+                            errorBuilder: (_, _, _) => _buildAvatarInitials(auth, 20),
                           ),
                         );
                       }

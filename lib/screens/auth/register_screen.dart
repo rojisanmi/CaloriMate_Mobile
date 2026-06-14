@@ -131,27 +131,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const SizedBox(height: 12),
                       const Text('Jenis Kelamin',
                           style: TextStyle(fontWeight: FontWeight.w600, color: CmColors.primaryGreen)),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: RadioListTile<String>(
-                              title: const Text('Laki-laki'),
-                              value: 'L',
-                              groupValue: _gender,
-                              onChanged: (v) => setState(() => _gender = v!),
-                              contentPadding: EdgeInsets.zero,
+                      RadioGroup<String>(
+                        groupValue: _gender,
+                        onChanged: (v) => setState(() => _gender = v!),
+                        child: Row(
+                          children: const [
+                            Expanded(
+                              child: RadioListTile<String>(
+                                title: Text('Laki-laki'),
+                                value: 'L',
+                                contentPadding: EdgeInsets.zero,
+                              ),
                             ),
-                          ),
-                          Expanded(
-                            child: RadioListTile<String>(
-                              title: const Text('Perempuan'),
-                              value: 'P',
-                              groupValue: _gender,
-                              onChanged: (v) => setState(() => _gender = v!),
-                              contentPadding: EdgeInsets.zero,
+                            Expanded(
+                              child: RadioListTile<String>(
+                                title: Text('Perempuan'),
+                                value: 'P',
+                                contentPadding: EdgeInsets.zero,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                     const SizedBox(height: 20),

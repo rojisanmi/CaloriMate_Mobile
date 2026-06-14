@@ -213,6 +213,7 @@ class _TrainerItemsScreenState extends State<TrainerItemsScreen> {
                 height: 46,
                 child: ElevatedButton(
                   onPressed: () async {
+                    final navigator = Navigator.of(ctx);
                     final itemId =
                         (item['program_item_id'] as num?)?.toInt() ??
                             (item['id'] as num?)?.toInt() ??
@@ -223,7 +224,7 @@ class _TrainerItemsScreenState extends State<TrainerItemsScreen> {
                           int.tryParse(durationCtrl.text) ?? 0,
                       'intensity_level': intensity,
                     });
-                    if (mounted) Navigator.pop(ctx);
+                    navigator.pop();
                     _load();
                   },
                   style: ElevatedButton.styleFrom(
@@ -320,6 +321,7 @@ class _TrainerItemsScreenState extends State<TrainerItemsScreen> {
                 child: ElevatedButton(
                   onPressed: () async {
                     if (nameCtrl.text.trim().isEmpty) return;
+                    final navigator = Navigator.of(ctx);
                     await _api.post(
                       '/trainer/programs/${widget.programId}/items',
                       data: {
@@ -329,7 +331,7 @@ class _TrainerItemsScreenState extends State<TrainerItemsScreen> {
                         'intensity_level': intensity,
                       },
                     );
-                    if (mounted) Navigator.pop(ctx);
+                    navigator.pop();
                     _load();
                   },
                   style: ElevatedButton.styleFrom(
@@ -681,7 +683,7 @@ class _TrainerItemsScreenState extends State<TrainerItemsScreen> {
                                   physics:
                                       const NeverScrollableScrollPhysics(),
                                   itemCount: _items.length,
-                                  separatorBuilder: (_, __) => const Divider(
+                                  separatorBuilder: (_, _) => const Divider(
                                       height: 1,
                                       color: Color(0xFFF5F5F5)),
                                   itemBuilder: (_, i) {

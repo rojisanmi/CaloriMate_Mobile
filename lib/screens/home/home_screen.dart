@@ -193,39 +193,3 @@ class _BmiPlaceholder extends StatelessWidget {
   }
 }
 
-class _QuickLink extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _QuickLink({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return CmCard(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: CmColors.primaryGreen.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: CmColors.primaryGreen, size: 24),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              color: CmColors.primaryGreen,
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

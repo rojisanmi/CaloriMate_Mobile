@@ -146,10 +146,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           if (_unreadCount > 0)
             TextButton(
               onPressed: () => _markAsRead(),
-              child: const Text('Tandai semua'),
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white,
               ),
+              child: const Text('Tandai semua'),
             ),
         ],
       ),
@@ -191,7 +191,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         padding: const EdgeInsets.all(16),
                         physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: _notifications.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        separatorBuilder: (_, _) => const SizedBox(height: 12),
                         itemBuilder: (_, index) => _buildNotificationItem(_notifications[index]),
                       ),
       ),

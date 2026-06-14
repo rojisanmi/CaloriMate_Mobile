@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "85585999350",
+    "project_id": "calorimate-6f8b0",
+    "storage_bucket": "calorimate-6f8b0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:85585999350:android:ce0c3bccc439e9d77803d7",
+        "android_client_info": {
+          "package_name": "com.calorimate.calorimate_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1XMCPemgcdDqXjzOi0NPjxZex1TbfEAQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -38,7 +38,7 @@ class _TrainerShellState extends State<TrainerShell> {
           width: 32,
           height: 32,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _buildAvatarInitials(auth, 14),
+          errorBuilder: (_, _, _) => _buildAvatarInitials(auth, 14),
         ),
       );
     }
@@ -231,7 +231,7 @@ class _TrainerShellState extends State<TrainerShell> {
                             width: 48,
                             height: 48,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _buildAvatarInitials(auth, 20),
+                            errorBuilder: (_, _, _) => _buildAvatarInitials(auth, 20),
                           ),
                         );
                       }

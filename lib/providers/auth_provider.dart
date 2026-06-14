@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_client.dart';
+import '../services/push_service.dart';
 import '../services/auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -182,6 +183,8 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    // Hapus FCM token dulu selagi sesi masih valid (butuh auth).
+    await PushService.instance.deleteToken();
     await _auth.logout();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user_role');

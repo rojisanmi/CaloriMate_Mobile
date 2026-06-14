@@ -389,7 +389,7 @@ class _TrainerProfileScreenState extends State<TrainerProfileScreen> {
     final serverPath = auth.trainer?['photo_url']?.toString() ?? auth.trainer?['photo_path']?.toString();
     if (serverPath != null && serverPath.isNotEmpty) {
       final url = serverPath.startsWith('http') ? serverPath : '${ApiConfig.storageUrl.replaceAll(RegExp(r'/$'), '')}/${serverPath.replaceFirst(RegExp(r'^/'), '')}';
-      return Image.network(url, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _buildAvatarInitials(auth));
+      return Image.network(url, fit: BoxFit.cover, errorBuilder: (_, _, _) => _buildAvatarInitials(auth));
     }
     return _buildAvatarInitials(auth);
   }

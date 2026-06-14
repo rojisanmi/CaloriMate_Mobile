@@ -1,3 +1,5 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -9,11 +11,21 @@ import 'screens/auth/login_screen.dart';
 import 'screens/main_shell.dart';
 import 'screens/trainer/trainer_shell.dart';
 import 'services/notification_service.dart';
+import 'services/push_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
   await NotificationService.instance.init();
+  // Reminder ditangani push FCM; pastikan tidak ada alarm lokal lama yang
+  // masih terjadwal (mencegah notif dobel pada perangkat yang sudah terlanjur).
+  await NotificationService.instance.cancelLocalReminders();
+
+  // Firebase Cloud Messaging (push notification)
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  await PushService.instance.init();
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,

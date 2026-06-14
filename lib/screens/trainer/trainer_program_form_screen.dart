@@ -8,12 +8,11 @@ class _ItemRow {
   final int? id; // program_item_id untuk item yang sudah ada (null = baru)
   final nameCtrl = TextEditingController();
   final durationCtrl = TextEditingController();
-  String intensity = '';
+  String intensity;
 
-  _ItemRow({this.id, String name = '', String duration = '', String intensity = ''}) {
+  _ItemRow({this.id, String name = '', String duration = '', this.intensity = ''}) {
     nameCtrl.text = name;
     durationCtrl.text = duration;
-    this.intensity = intensity;
   }
 
   void dispose() {
@@ -137,7 +136,9 @@ class _TrainerProgramFormScreenState extends State<TrainerProgramFormScreen> {
   void dispose() {
     _nameCtrl.dispose();
     _typeCtrl.dispose();
-    for (final row in _itemRows) row.dispose();
+    for (final row in _itemRows) {
+      row.dispose();
+    }
     super.dispose();
   }
 
@@ -283,7 +284,7 @@ class _TrainerProgramFormScreenState extends State<TrainerProgramFormScreen> {
                             _label('Tingkat Kesulitan'),
                             const SizedBox(height: 6),
                             DropdownButtonFormField<String>(
-                              value: _difficulty.isEmpty ? null : _difficulty,
+                              initialValue: _difficulty.isEmpty ? null : _difficulty,
                               isExpanded: true,
                               icon: const Icon(Icons.keyboard_arrow_down_rounded,
                                   color: CmColors.primaryGreen),
@@ -462,7 +463,7 @@ class _TrainerProgramFormScreenState extends State<TrainerProgramFormScreen> {
                                         _labelSm('Intensitas'),
                                         const SizedBox(height: 4),
                                         DropdownButtonFormField<String>(
-                                          value: row.intensity.isEmpty
+                                          initialValue: row.intensity.isEmpty
                                               ? null
                                               : row.intensity,
                                           isDense: true,

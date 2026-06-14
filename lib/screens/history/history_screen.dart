@@ -275,7 +275,7 @@ class _HistoryList extends StatelessWidget {
       return CmCard(
         child: Column(
           children: [
-            Image.asset(emptyAsset, height: 80, errorBuilder: (_, __, ___) =>
+            Image.asset(emptyAsset, height: 80, errorBuilder: (_, _, _) =>
                 Icon(Icons.history, size: 64, color: Colors.grey.shade300)),
             const SizedBox(height: 8),
             Text(emptyText, style: TextStyle(color: Colors.grey.shade500)),

@@ -369,7 +369,7 @@ class _TrainerProgramsScreenState extends State<TrainerProgramsScreen> {
                     _infoRow('Tingkat', _capitalize(difficulty)),
                   ],
                   if (duration != null && duration.toString() != '0' && duration.toString() != 'null') ...[
-                    _infoRow('Durasi', '${duration} mnt'),
+                    _infoRow('Durasi', '$duration mnt'),
                   ],
 
                   const Spacer(),

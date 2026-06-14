@@ -250,8 +250,9 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                 children: [
                   OutlinedButton(
                     onPressed: () async {
+                      final navigator = Navigator.of(context);
                       if (await _confirmAction('Batalkan Latihan', 'Apakah Anda yakin ingin membatalkan sesi latihan ini? Progress tidak akan disimpan.', 'Ya, Batalkan')) {
-                        if (mounted) Navigator.pop(context);
+                        navigator.pop();
                       }
                     },
                     style: OutlinedButton.styleFrom(

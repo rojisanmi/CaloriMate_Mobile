@@ -260,9 +260,13 @@ class StatisticScreenState extends State<StatisticScreen> {
                     final text = t['text']?.toString() ?? '';
                     
                     Color bColor = Colors.grey;
-                    if (type == 'success') bColor = Colors.green;
-                    else if (type == 'danger') bColor = Colors.red;
-                    else if (type == 'warning') bColor = Colors.orange;
+                    if (type == 'success') {
+                      bColor = Colors.green;
+                    } else if (type == 'danger') {
+                      bColor = Colors.red;
+                    } else if (type == 'warning') {
+                      bColor = Colors.orange;
+                    }
                     
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),

@@ -314,7 +314,7 @@ class DiaryScreenState extends State<DiaryScreen> {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: _recommendations.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+                  separatorBuilder: (_, _) => const SizedBox(width: 10),
                   itemBuilder: (_, i) {
                     final rec = _recommendations[i];
                     final food = rec['food'] as Map<String, dynamic>? ?? {};
@@ -484,7 +484,7 @@ class _MealSection extends StatelessWidget {
           children: [
             Row(
               children: [
-                Image.asset(iconPath, width: 28, height: 28, errorBuilder: (_, __, ___) =>
+                Image.asset(iconPath, width: 28, height: 28, errorBuilder: (_, _, _) =>
                     Icon(Icons.restaurant, color: CmColors.primaryGreen, size: 28)),
                 const SizedBox(width: 8),
                 Expanded(
