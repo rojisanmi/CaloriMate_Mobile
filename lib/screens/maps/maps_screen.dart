@@ -84,20 +84,29 @@ class _MapsScreenState extends State<MapsScreen> {
   }
 
   Future<void> _loadNearbyPlaces(LatLng current) async {
-    try {
-      const overpassUrl = 'https://overpass-api.de/api/interpreter';
-      final bbox = _bboxAround(current);
-      final s = bbox.$1;
-      final w = bbox.$2;
-      final n = bbox.$3;
-      final e = bbox.$4;
-      String query;
-      if (widget.mode == 'exercise') {
-        query = '''
+    const endpoints = [
+      'https://overpass-api.de/api/interpreter',
+      'https://overpass.kumi.systems/api/interpreter',
+    ];
+
+    final bbox = _bboxAround(current);
+    final s = bbox.$1;
+    final w = bbox.$2;
+    final n = bbox.$3;
+    final e = bbox.$4;
+
+    String query;
+    if (widget.mode == 'exercise') {
+      query = '''
 [out:json][timeout:25];
 (
   node["leisure"="park"]($s,$w,$n,$e);
+  way["leisure"="park"]($s,$w,$n,$e);
+  relation["leisure"="park"]($s,$w,$n,$e);
   node["leisure"="pitch"]($s,$w,$n,$e);
+  way["leisure"="pitch"]($s,$w,$n,$e);
+  node["leisure"="fitness_centre"]($s,$w,$n,$e);
+  way["leisure"="fitness_centre"]($s,$w,$n,$e);
   node["sport"="fitness_centre"]($s,$w,$n,$e);
   way["sport"="fitness_centre"]($s,$w,$n,$e);
   node["building"="gym"]($s,$w,$n,$e);
@@ -106,54 +115,88 @@ class _MapsScreenState extends State<MapsScreen> {
 );
 out center body;
 ''';
-      } else {
-        query = '''
+    } else {
+      query = '''
 [out:json][timeout:25];
 (
   node["amenity"="restaurant"]($s,$w,$n,$e);
-  node["amenity"="cafe"]($s,$w,$n,$e);
-  node["shop"="health_food"]($s,$w,$n,$e);
   way["amenity"="restaurant"]($s,$w,$n,$e);
+  node["amenity"="cafe"]($s,$w,$n,$e);
+  way["amenity"="cafe"]($s,$w,$n,$e);
+  node["shop"="health_food"]($s,$w,$n,$e);
+  way["shop"="health_food"]($s,$w,$n,$e);
 );
 out center body;
 ''';
-      }
-      final response = await Dio().post(
-        overpassUrl,
-        data: query,
-        options: Options(contentType: Headers.textPlainContentType),
-      );
-
-      final body = response.data;
-      if (body is Map<String, dynamic> && body['elements'] is List) {
-        final elements = body['elements'] as List;
-        final parsed = elements.whereType<Map>().map((element) {
-          final map = Map<String, dynamic>.from(element);
-          final lat = map['lat'] ?? map['center']?['lat'];
-          final lon = map['lon'] ?? map['center']?['lon'];
-          final tagsRaw = map['tags'];
-          if (lat is! num || lon is! num || tagsRaw is! Map) return null;
-          final tags = Map<String, dynamic>.from(tagsRaw);
-          final defaultName = widget.mode == 'exercise' ? 'Tempat Olahraga' : 'Restoran';
-          final name = tags['name']?.toString() ?? tags['brand']?.toString() ?? defaultName;
-          final hours = tags['opening_hours']?.toString() ?? 'Jam buka tidak tersedia';
-          final url = 'https://www.google.com/maps/dir/?api=1&destination=$lat,$lon';
-          return _HealthyLocation(
-            point: LatLng(lat.toDouble(), lon.toDouble()),
-            name: name,
-            detail: hours,
-            mapUrl: Uri.parse(url),
-          );
-        }).whereType<_HealthyLocation>().toList();
-
-        setState(() {
-          _locations.clear();
-          _locations.addAll(parsed);
-        });
-      }
-    } catch (_) {
-      // keep map visible even if external search fails
     }
+
+    debugPrint('[Maps] bbox: s=$s, w=$w, n=$n, e=$e');
+    debugPrint('[Maps] query mode: ${widget.mode}');
+
+    for (final endpoint in endpoints) {
+      try {
+        debugPrint('[Maps] Trying endpoint: $endpoint');
+        final url = '$endpoint?data=${Uri.encodeComponent(query)}';
+        final response = await Dio().get(
+          url,
+          options: Options(
+            headers: {
+              'User-Agent': 'CaloriMate/1.0 (Flutter; contact@calorimate.app)',
+            },
+            receiveTimeout: const Duration(seconds: 30),
+            sendTimeout: const Duration(seconds: 10),
+            validateStatus: (status) => status != null && status < 500,
+          ),
+        );
+
+        debugPrint('[Maps] Response status: ${response.statusCode}');
+        final body = response.data;
+
+        if (body is Map<String, dynamic> && body['elements'] is List) {
+          final elements = body['elements'] as List;
+          debugPrint('[Maps] Elements found: ${elements.length}');
+
+          final parsed = elements.whereType<Map>().map((element) {
+            final map = Map<String, dynamic>.from(element);
+            final lat = map['lat'] ?? map['center']?['lat'];
+            final lon = map['lon'] ?? map['center']?['lon'];
+            final tagsRaw = map['tags'];
+            if (lat is! num || lon is! num || tagsRaw is! Map) return null;
+            final tags = Map<String, dynamic>.from(tagsRaw);
+            final defaultName = widget.mode == 'exercise' ? 'Tempat Olahraga (Tanpa Nama)' : 'Restoran (Tanpa Nama)';
+            final name = tags['name']?.toString() ?? 
+                         tags['name:id']?.toString() ??
+                         tags['alt_name']?.toString() ??
+                         tags['brand']?.toString() ?? 
+                         tags['operator']?.toString() ?? 
+                         defaultName;
+            final hours = tags['opening_hours']?.toString() ?? 'Jam buka tidak tersedia';
+            final url = 'https://www.google.com/maps/dir/?api=1&destination=$lat,$lon';
+            return _HealthyLocation(
+              point: LatLng(lat.toDouble(), lon.toDouble()),
+              name: name,
+              detail: hours,
+              mapUrl: Uri.parse(url),
+            );
+          }).whereType<_HealthyLocation>().toList();
+
+          debugPrint('[Maps] Parsed locations: ${parsed.length}');
+
+          setState(() {
+            _locations.clear();
+            _locations.addAll(parsed);
+          });
+          return; // success, stop trying other endpoints
+        } else {
+          debugPrint('[Maps] Unexpected response body: $body');
+        }
+      } catch (err) {
+        debugPrint('[Maps] Error with $endpoint: $err');
+        // try next endpoint
+      }
+    }
+    // all endpoints failed — no markers but map stays visible
+    debugPrint('[Maps] All Overpass endpoints failed');
   }
 
   Future<void> _showLocationInfo(_HealthyLocation location) async {
@@ -162,7 +205,7 @@ out center body;
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) {
+      builder: (ctx) {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           child: Column(
@@ -175,12 +218,26 @@ out center body;
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: () async {
-                  if (await canLaunchUrl(location.mapUrl)) {
-                    await launchUrl(location.mapUrl, mode: LaunchMode.externalApplication);
+                  bool opened = false;
+                  try {
+                    opened = await launchUrl(location.mapUrl, mode: LaunchMode.externalApplication);
+                  } catch (_) {}
+                  
+                  if (!opened) {
+                    try {
+                      // Fallback buka di browser biasa kalau aplikasi Google Maps tidak ada/gagal
+                      opened = await launchUrl(location.mapUrl, mode: LaunchMode.platformDefault);
+                    } catch (_) {}
+                  }
+
+                  if (!opened && ctx.mounted) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      const SnackBar(content: Text('Tidak dapat membuka tautan peta')),
+                    );
                   }
                 },
                 icon: const Icon(Icons.navigation_outlined),
-                label: const Text('Buka di Google Maps'),
+                label: const Text('Buka di Google Maps / Browser'),
               ),
             ],
           ),
@@ -193,7 +250,7 @@ out center body;
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.mode == 'exercise' ? 'Gym & Taman Olahraga' : 'Restoran Sehat'),
+        title: Text(widget.mode == 'exercise' ? 'Gym & Taman Olahraga' : 'Restoran'),
       ),
       body: _error != null
           ? Center(
@@ -276,14 +333,14 @@ out center body;
                             _loading
                                 ? (widget.mode == 'exercise'
                                     ? 'Mencari gym & taman olahraga di sekitar Anda...'
-                                    : 'Mencari restoran sehat di sekitar Anda...')
+                                    : 'Mencari restoran di sekitar Anda...')
                                 : (_locations.isEmpty
                                     ? (widget.mode == 'exercise'
                                         ? 'Tidak ditemukan gym atau taman terdekat. Coba lagi nanti.'
-                                        : 'Tidak ditemukan restoran sehat. Coba lagi nanti.')
+                                        : 'Tidak ditemukan restoran. Coba lagi nanti.')
                                     : (widget.mode == 'exercise'
                                         ? 'Menampilkan ${_locations.length} gym & taman terdekat.'
-                                        : 'Menampilkan ${_locations.length} restoran sehat di sekitar Anda.')),
+                                        : 'Menampilkan ${_locations.length} restoran di sekitar Anda.')),
                               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                             ),
                           ),

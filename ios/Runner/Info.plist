@@ -27,9 +27,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>CaloriMate membutuhkan akses lokasi untuk menampilkan peta dan rekomendasi restoran sehat di sekitar Anda.</string>
+	<string>CaloriMate membutuhkan akses lokasi untuk menampilkan peta dan rekomendasi restoran di sekitar Anda.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>CaloriMate membutuhkan akses lokasi untuk menemukan restoran sehat di sekitar Anda.</string>
+	<string>CaloriMate membutuhkan akses lokasi untuk menemukan restoran di sekitar Anda.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>CaloriMate membutuhkan akses kamera untuk mengambil foto profil.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

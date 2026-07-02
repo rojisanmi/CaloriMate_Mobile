@@ -28,7 +28,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _photoPath;
 
   Future<void> _pickPhoto() async {
-    final x = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Pilih Sumber Foto',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined),
+                title: const Text('Ambil dari Kamera'),
+                onTap: () => Navigator.pop(context, ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('Pilih dari Galeri'),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (source == null) return;
+    final x = await _picker.pickImage(source: source, imageQuality: 80);
     if (x != null) setState(() => _photoPath = x.path);
   }
 
